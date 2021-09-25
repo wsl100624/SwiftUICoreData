@@ -12,7 +12,6 @@ struct MainView: View {
     @State private var presentCardForm = false
     
     @Environment(\.managedObjectContext) private var viewContext
-
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Card.timestamp, ascending: true)],
         animation: .default)
@@ -32,6 +31,8 @@ struct MainView: View {
                     .tabViewStyle(.page(indexDisplayMode: .always))
                     .frame(height: 280)
                     .indexViewStyle(.page(backgroundDisplayMode: .always))
+                } else {
+                    emptyPromptMessage
                 }
                 
                 Spacer()
@@ -47,6 +48,24 @@ struct MainView: View {
             }, trailing: addCardButton)
             
         }
+    }
+    
+    private var emptyPromptMessage: some View {
+        VStack {
+            Text("You currectly have no cards in the system.")
+                .padding(.horizontal, 48)
+                .padding(.vertical)
+                .multilineTextAlignment(.center)
+            Button {
+                presentCardForm.toggle()
+            } label: {
+                Text("+ add your first card".capitalized)
+                    .foregroundColor(Color(.systemBackground))
+            }
+            .padding()
+            .background(Color(.label))
+            .cornerRadius(12)
+        }.font(.subheadline.bold())
     }
     
     var deleteAllButton: some View {
@@ -96,51 +115,6 @@ struct MainView: View {
     }
 }
 
-struct CreditCardView: View {
-    
-    let card: Card
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            
-            Text(card.name ?? "")
-                .font(.title.bold())
-            HStack {
-                Image(card.type?.lowercased() ?? "visa")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 44)
-//                    .clipped()
-                Spacer()
-                Text("Balance: $5,000")
-                    .font(.headline)
-            }
-            
-            Text(card.number ?? "")
-            Text("Credit Limit: $\(card.limit)")
-        }
-        .foregroundColor(.white)
-        .padding()
-        .background(
-            VStack {
-                if let colorData = card.color,
-                   let color = UIColor.color(data: colorData),
-                   let actualColor = Color(color) {
-                    LinearGradient(colors: [actualColor.opacity(0.6), actualColor], startPoint: .center, endPoint: .bottom)
-                } else {
-                    Color.purple
-                }
-                
-            }
-            
-        )
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary, lineWidth: 1))
-        .cornerRadius(12)
-        .shadow(radius: 5)
-        .padding(.horizontal)
-        .padding(.top, 8)
-    }
-}
 
 struct MainView_Previews: PreviewProvider {
     static var previews: some View {
