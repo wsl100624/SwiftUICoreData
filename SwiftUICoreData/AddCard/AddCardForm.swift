@@ -13,7 +13,7 @@ struct AddCardForm: View {
     
     // Card Info
     @State private var name = ""
-    @State private var number = ""
+    @State private var cardNumber = ""
     @State private var limit = ""
         // Picker Data
     @State private var cardType = "visa"
@@ -34,7 +34,7 @@ struct AddCardForm: View {
                 Section {
                     TextField("Name", text: $name)
                     
-                    TextField("credit card number".capitalized, text: $number)
+                    TextField("credit card number".capitalized, text: $cardNumber)
                         .keyboardType(.numberPad)
                     
                     TextField("credit limit".capitalized, text: $limit)
@@ -70,20 +70,50 @@ struct AddCardForm: View {
                 } header: {
                     Text("color".uppercased())
                 }
-
             }
             
             .navigationTitle("Add Credit Card")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        isPresented.wrappedValue.dismiss()
-                    }, label: {
-                        Text("Cancel")
-                    })
+                    cancelButton
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    saveButton
                 }
             }
         }
+    }
+    
+    var cancelButton: some View {
+        Button(action: {
+            isPresented.wrappedValue.dismiss()
+        }, label: {
+            Text("Cancel")
+        })
+    }
+    
+    var saveButton: some View {
+        Button(action: {
+            let viewContext = PersistenceController.shared.container.viewContext
+            let card = Card(context: viewContext)
+            card.timestamp = Date()
+            card.name = self.name
+            card.number = self.cardNumber
+            card.limit = Int32(self.limit) ?? 0
+            card.expMonth = Int16(self.month)
+            card.year = Int16(self.year)
+            card.color = UIColor(self.color).encode()
+            card.type = cardType
+            
+            do {
+                try viewContext.save()
+                isPresented.wrappedValue.dismiss()
+            } catch let error {
+                print(error)
+            }
+        }, label: {
+            Text("Save")
+        })
     }
 }
 

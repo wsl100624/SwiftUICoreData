@@ -25,7 +25,7 @@ struct MainView: View {
                 if !cards.isEmpty {
                     TabView {
                         ForEach(cards) { card in
-                            CreditCardView()
+                            CreditCardView(card: card)
                                 .padding(.bottom, 50)
                         }
                     }
@@ -44,8 +44,7 @@ struct MainView: View {
             .navigationBarItems(leading: HStack {
                 addItemButton
                 deleteAllButton
-            },
-                                trailing: addCardButton)
+            }, trailing: addCardButton)
             
         }
     }
@@ -74,9 +73,8 @@ struct MainView: View {
 
                 do {
                     try viewContext.save()
-                } catch {
-//                    let nsError = error as NSError
-//                    fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+                } catch let error {
+                    print(error)
                 }
             }
         }, label: {
@@ -99,29 +97,42 @@ struct MainView: View {
 }
 
 struct CreditCardView: View {
+    
+    let card: Card
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             
-            Text("Apple Blue Visa Card")
+            Text(card.name ?? "")
                 .font(.title.bold())
             HStack {
-                Image("visa")
+                Image(card.type?.lowercased() ?? "visa")
                     .resizable()
                     .scaledToFit()
                     .frame(height: 44)
-                    .clipped()
+//                    .clipped()
                 Spacer()
                 Text("Balance: $5,000")
                     .font(.headline)
             }
             
-            Text("1234 1234 1234 1234")
-            Text("Credit Limit: $50,000")
+            Text(card.number ?? "")
+            Text("Credit Limit: $\(card.limit)")
         }
         .foregroundColor(.white)
         .padding()
         .background(
-            LinearGradient(colors: [Color.blue.opacity(0.6), Color.blue], startPoint: .center, endPoint: .bottom)
+            VStack {
+                if let colorData = card.color,
+                   let color = UIColor.color(data: colorData),
+                   let actualColor = Color(color) {
+                    LinearGradient(colors: [actualColor.opacity(0.6), actualColor], startPoint: .center, endPoint: .bottom)
+                } else {
+                    Color.purple
+                }
+                
+            }
+            
         )
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary, lineWidth: 1))
         .cornerRadius(12)
