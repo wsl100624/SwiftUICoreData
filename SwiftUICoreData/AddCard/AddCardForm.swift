@@ -9,13 +9,35 @@ import SwiftUI
 
 struct AddCardForm: View {
     
+    let card: Card?
+    
+    init(card: Card? = nil) {
+        self.card = card
+        _name = State(initialValue: card?.name ?? "")
+        _cardNumber = State(initialValue: card?.number ?? "")
+        _cardType = State(initialValue: card?.type ?? "")
+        
+        if let limit = card?.limit {
+            _limit = State(initialValue: String(limit))
+        }
+        
+        _month = State(initialValue: Int(card?.expMonth ?? 1))
+        _year = State(initialValue: Int(card?.year ?? Int16(currentYear)))
+        
+        if let colorData = card?.color, let uiColor = UIColor.color(data: colorData) {
+            let color = Color(uiColor)
+            _color = State(initialValue: color)
+        }
+    }
+    
     @Environment(\.presentationMode) var isPresented
     
     // Card Info
     @State private var name = ""
     @State private var cardNumber = ""
     @State private var limit = ""
-        // Picker Data
+    
+    // Picker Data
     @State private var cardType = "visa"
     var cardTypes = ["visa", "master", "discover", "chase"]
     
@@ -72,7 +94,7 @@ struct AddCardForm: View {
                 }
             }
             
-            .navigationTitle("Add Credit Card")
+            .navigationTitle(self.card != nil ? self.card!.name ?? "" : "Add Credit Card")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     cancelButton
@@ -95,7 +117,11 @@ struct AddCardForm: View {
     var saveButton: some View {
         Button(action: {
             let viewContext = PersistenceController.shared.container.viewContext
-            let card = Card(context: viewContext)
+            
+            let card = self.card != nil
+            ? self.card!
+            : Card(context: viewContext)
+            
             card.timestamp = Date()
             card.name = self.name
             card.number = self.cardNumber

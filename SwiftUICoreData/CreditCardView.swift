@@ -12,6 +12,8 @@ struct CreditCardView: View {
     let card: Card
     
     @State private var shouldShowActionSheet = false
+    @State private var shouldShowEditForm = false
+    @State var refreshId = UUID()
     
     private func handleDelete() {
         let viewContext = PersistenceController.shared.container.viewContext
@@ -22,6 +24,10 @@ struct CreditCardView: View {
         } catch let error {
             print(error)
         }
+    }
+    
+    private func handleEdit() {
+        shouldShowEditForm.toggle()
     }
     
     var body: some View {
@@ -40,6 +46,7 @@ struct CreditCardView: View {
                 }
                 .actionSheet(isPresented: $shouldShowActionSheet) {
                     .init(title: Text("Delete This Card?"), buttons: [
+                        .default(Text("Edit"), action: handleEdit),
                         .destructive(Text("Delete"), action: handleDelete),
                         .cancel()
                     ])
@@ -58,7 +65,16 @@ struct CreditCardView: View {
             }
             
             Text(card.number ?? "")
-            Text("Credit Limit: $\(card.limit)")
+            
+            HStack {
+                Text("Credit Limit: $\(card.limit)")
+                Spacer()
+                VStack(alignment: .trailing) {
+                    Text("Valid Thru")
+                    Text("\(card.expMonth)/\(card.year - 2000)")
+                }
+            }
+            
         }
         .foregroundColor(.white)
         .padding()
@@ -80,6 +96,9 @@ struct CreditCardView: View {
         .shadow(radius: 5)
         .padding(.horizontal)
         .padding(.top, 8)
+        .fullScreenCover(isPresented: $shouldShowEditForm) {
+            AddCardForm(card: self.card)
+        }
     }
 }
 
