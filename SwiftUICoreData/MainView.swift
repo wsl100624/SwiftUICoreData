@@ -10,6 +10,7 @@ import SwiftUI
 struct MainView: View {
     
     @State private var presentCardForm = false
+    @State private var shouldShowAddTransactionForm = false
     
     @Environment(\.managedObjectContext) private var viewContext
     @FetchRequest(
@@ -25,19 +26,35 @@ struct MainView: View {
                     TabView {
                         ForEach(cards) { card in
                             CreditCardView(card: card)
-                                .padding(.bottom, 50)
+                                .padding(.bottom, 60)
                         }
                     }
                     .tabViewStyle(.page(indexDisplayMode: .always))
-                    .frame(height: 280)
+                    .frame(height: 300)
                     .indexViewStyle(.page(backgroundDisplayMode: .always))
+                    
+                    Text("Get started by adding your first transaction")
+                    
+                    Button {
+                        shouldShowAddTransactionForm.toggle()
+                    } label: {
+                        Text("+ Transaction")
+                            .padding(.init(top: 10, leading: 14, bottom: 10, trailing: 14))
+                            .background(Color(.label))
+                            .foregroundColor(Color(.systemBackground))
+                            .font(.headline)
+                            .cornerRadius(6)
+                    }
+                    .fullScreenCover(isPresented: $shouldShowAddTransactionForm) {
+                        AddTransactionForm()
+                    }
                 } else {
                     emptyPromptMessage
                 }
                 
                 Spacer()
                     .fullScreenCover(isPresented: $presentCardForm, onDismiss: nil) {
-                        AddCardForm()
+                        AddTransactionForm()
                     }
 
             }
