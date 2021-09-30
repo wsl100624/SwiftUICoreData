@@ -14,8 +14,9 @@ struct AddTransactionForm: View {
     @State private var name = ""
     @State private var amount = ""
     @State private var date = Date()
-    @State private var photo = UIImage()
+    @State private var photo: Data?
     
+    @State private var shouldShowPhotoPickerView = false
     
     var body: some View {
         NavigationView {
@@ -36,14 +37,27 @@ struct AddTransactionForm: View {
                 
                 Section {
                     Button {
-                        
+                        shouldShowPhotoPickerView.toggle()
                     } label: {
+                            
                         Text("Select Photo")
+                    }
+                    .fullScreenCover(isPresented: $shouldShowPhotoPickerView) {
+                        PhotoPickerView(photoData: $photo)
+                    }
+                    
+                    
+                    if let data = self.photo, let image = UIImage(data: data) {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
                     }
 
                 } header: {
                     Text("photo/receipt".uppercased())
                 }
+                
+                
             }
             .navigationTitle("Add Transaction")
             .toolbar {
