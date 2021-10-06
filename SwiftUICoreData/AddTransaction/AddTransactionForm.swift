@@ -14,7 +14,7 @@ struct AddTransactionForm: View {
     @State private var name = ""
     @State private var amount = ""
     @State private var date = Date()
-    @State private var photo: Data?
+    @State private var photoData: Data?
     
     @State private var shouldShowPhotoPickerView = false
     
@@ -43,11 +43,11 @@ struct AddTransactionForm: View {
                         Text("Select Photo")
                     }
                     .fullScreenCover(isPresented: $shouldShowPhotoPickerView) {
-                        PhotoPickerView(photoData: $photo)
+                        PhotoPickerView(photoData: $photoData)
                     }
                     
                     
-                    if let data = self.photo, let image = UIImage(data: data) {
+                    if let data = self.photoData, let image = UIImage(data: data) {
                         Image(uiImage: image)
                             .resizable()
                             .scaledToFill()
@@ -71,7 +71,19 @@ struct AddTransactionForm: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        print("Save")
+                        let viewContext = PersistenceController.shared.container.viewContext
+                        let transaction = CardTransaction(context: viewContext)
+                        transaction.name = self.name
+                        transaction.amount = Float(self.amount) ?? 0
+                        transaction.photoData = self.photoData
+                        transaction.timestamp = Date()
+
+                        do {
+                            try viewContext.save()
+                            isPresented.wrappedValue.dismiss()
+                        } catch let error {
+                            print(error)
+                        }
                     } label: {
                         Text("Save")
                     }

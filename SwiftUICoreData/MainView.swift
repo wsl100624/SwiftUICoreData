@@ -18,6 +18,11 @@ struct MainView: View {
         animation: .default)
     private var cards: FetchedResults<Card>
     
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \CardTransaction.timestamp, ascending: false)],
+        animation: .default)
+    private var transactions: FetchedResults<CardTransaction>
+    
     var body: some View {
         NavigationView {
             ScrollView {
@@ -33,28 +38,73 @@ struct MainView: View {
                     .frame(height: 300)
                     .indexViewStyle(.page(backgroundDisplayMode: .always))
                     
-                    Text("Get started by adding your first transaction")
+                    if !transactions.isEmpty {
+                        ForEach(transactions) { transaction in
+                            VStack {
+                                HStack {
+                                    Text(transaction.name ?? "")
+                                        .font(.headline.bold())
+                                    
+                                    Spacer()
+                                    
+                                    Button {
+                                        print("dot pressed")
+                                    } label: {
+                                        Image(systemName: "ellipsis")
+                                            .font(.system(size: 24))
+                                    }
+                                }
+                                .padding(.top, 12)
+                                .padding(.horizontal)
+                                
+                                HStack {
+                                    Text(transaction.timestamp?.formatted() ?? "")
+                                    Spacer()
+                                    Text("$ \(String(format: "%.2f", transaction.amount))")
+                                }
+                                .font(.subheadline)
+                                .padding(.horizontal)
+                                
+                                if let data = transaction.photoData, let image = UIImage(data: data) {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .padding()
+                                }
+                                
+                                HStack { Spacer() }
+                            }
+                            .foregroundColor(Color(.label))
+                            .background(Color.white)
+                            .cornerRadius(10)
+                            .shadow(radius: 5)
+                            .padding()
+                        }
+                    } else {
+                        Text("Get started by adding your first transaction")
+                        
+                        Button {
+                            shouldShowAddTransactionForm.toggle()
+                        } label: {
+                            Text("+ Transaction")
+                                .padding(.init(top: 10, leading: 14, bottom: 10, trailing: 14))
+                                .background(Color(.label))
+                                .foregroundColor(Color(.systemBackground))
+                                .font(.headline)
+                                .cornerRadius(6)
+                        }
+                        .fullScreenCover(isPresented: $shouldShowAddTransactionForm) {
+                            AddTransactionForm()
+                        }
+                    }
                     
-                    Button {
-                        shouldShowAddTransactionForm.toggle()
-                    } label: {
-                        Text("+ Transaction")
-                            .padding(.init(top: 10, leading: 14, bottom: 10, trailing: 14))
-                            .background(Color(.label))
-                            .foregroundColor(Color(.systemBackground))
-                            .font(.headline)
-                            .cornerRadius(6)
-                    }
-                    .fullScreenCover(isPresented: $shouldShowAddTransactionForm) {
-                        AddTransactionForm()
-                    }
                 } else {
                     emptyPromptMessage
                 }
                 
                 Spacer()
                     .fullScreenCover(isPresented: $presentCardForm, onDismiss: nil) {
-                        AddTransactionForm()
+                        AddCardForm()
                     }
 
             }
